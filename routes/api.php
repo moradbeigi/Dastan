@@ -29,6 +29,10 @@ Route::post('login', 'ADMIN\RegisterController@login');
 
 // Route::resource('comments','CommentController');
 
+Route::middleware('auth:api')->group(function () {
+    Route::resource('normaluser', 'ADMIN\UserController');
+});
+
 Route::middleware('auth:api','admin')->group(function () {
     Route::resource('useradmin','ADMIN\UserController');
     Route::resource('galleryimageadmin','ImageGalleryController');

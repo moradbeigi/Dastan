@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Post;
 use Validator;
 use Illuminate\Http\Request;
@@ -16,7 +17,8 @@ class PostController extends Controller
     public function index()
     {
         $Posts = Post::orderBy('id','DESC')->get();
-        return response()->json($Posts);
+        $data = PostResource::collection($Posts);
+        return response()->json($data);
     }
 
     /**
@@ -46,7 +48,7 @@ class PostController extends Controller
 
         $validator = Validator::make($request->all(),$roules);
         if($validator->fails()){
-            return response()->json(['error' => $validator->error()],401);
+            return response()->json(['error' => $validator->error()],422);
         }
 
         $photoUpload = request()->file('image');
@@ -54,16 +56,14 @@ class PostController extends Controller
         $photoPath = public_path('/images/Posts/');
         $photoUpload->move($photoPath,$photoName);
 
-        $inpute = $request->all();
-        $inpute['title'] =  $request->title;
-        $inpute['content'] = $request->content;
+        $inpute= $validator->validated();
+
         $inpute['image'] = '/images/Posts/' . $photoName;
-        $inpute['comment'] = $request->comment;
 
         $Posts = Post::create($inpute);
-        
+        $data = new PostResource($Posts);
 
-        return response()->json($Posts,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -75,11 +75,11 @@ class PostController extends Controller
     public function show($id)
     {
         $Posts = Post::find($id);
-
+        $data = new PostResource($Posts);
         if(is_null($Posts)){
             return response()->json('id not found',404);
         }
-        return response()->json($Posts,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -103,13 +103,14 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         $Posts = Post::find($id);
+        $data = new PostResource($Posts);
 
         if(is_null($Posts)){
             return response()->json('id not found',404);
         }
 
         $Posts->update($request->all());
-        return response()->json($Posts,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -121,12 +122,12 @@ class PostController extends Controller
     public function destroy(Request $request, $id)
     {
         $Posts = Post::find($id);
-
+        $data = new PostResource($Posts);
         if(is_null($Posts)){
             return response()->json('id not found',404);
         }
 
-        $Posts->delete($request->all());
+        $data->delete($request->all());
         return response()->json('record delete');
     }
 }

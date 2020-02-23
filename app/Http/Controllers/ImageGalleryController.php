@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ImageGalleryResource;
 use Illuminate\Http\Request;
 use App\ImageGallery;
 use Validator;
@@ -16,8 +17,8 @@ class ImageGalleryController extends Controller
     public function index () {
         
         $images = ImageGallery::orderBy('id','DESC')->get();
-
-        return response()->json($images);
+        $data = ImageGalleryResource::collection($images);
+        return response()->json($data);
     }
 
 
@@ -34,7 +35,7 @@ class ImageGalleryController extends Controller
         $validator = Validator::make($request->all(),$Roules);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()],401);
+            return response()->json(['error' => $validator->errors()],422);
         }
 
         $photoUpload = request()->file('image');
@@ -42,14 +43,16 @@ class ImageGalleryController extends Controller
         $photoPath = public_path('/images/Gallery/');
         $photoUpload->move($photoPath,$photoName);
 
-        $inpute = $request->all();
-        $inpute['title'] =  $request->title;
+        $inpute= $validator->validated();
+        
         $inpute['image'] = '/images/Gallery/' . $photoName;
 
         $ImageGallery = ImageGallery::create($inpute);
         //$success['image'] = $ImageGallery->image;
 
-        return response()->json($ImageGallery,200);
+        $data = new ImageGalleryResource($ImageGallery);
+
+        return response()->json($data,200);
 
     }
 
@@ -61,12 +64,12 @@ class ImageGalleryController extends Controller
     public function destroy (Request $request , $id) {
         
         $ImageGallery = ImageGallery::find($id);
-
+        $data = new ImageGalleryResource($ImageGallery);
         if(is_null($ImageGallery)){
             return response()->json(['message' => 'record not found'],404);
         }
 
-        $ImageGallery->delete($request->all());
+        $data->delete($request->all());
         return response()->json(['message' => 'record delete'],200);
     }
 }

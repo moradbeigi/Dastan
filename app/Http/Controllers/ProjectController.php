@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProjectResource;
 use Illuminate\Http\Request;
 use App\Project;
 use Validator;
@@ -18,8 +19,8 @@ class ProjectController extends Controller
     public function index()
     {
         $project = Project::orderBy('id','DESC')->get();
-
-        return response()->json($project);
+        $data = ProjectResource::collection($project);
+        return response()->json($data);
     }
 
     /**
@@ -49,7 +50,7 @@ class ProjectController extends Controller
         $validator = Validator::make($request->all(),$Roules);
 
         if($validator->fails()){
-            return response()->json(['error' => $validator->errors()],401);
+            return response()->json(['error' => $validator->errors()],422);
         }
 
         $photoUpload = $request->file('image');
@@ -57,14 +58,14 @@ class ProjectController extends Controller
         $photoPath = public_path('/images/Projects/');
         $photoUpload->move($photoPath,$photoName);
        
-        $inpute = $request->all();
+        $inpute= $validator->validated();
+        
         $inpute['image'] = '/images/Projects/' . $photoName;
-        $inpute['title'] = $request->title;
-        $inpute['decribe'] = $request->describe;
         
         $project = Project::create($inpute);
+        $data = new ProjectResource($project);
 
-        return response()->json($project,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -76,12 +77,13 @@ class ProjectController extends Controller
     public function show($id)
     {
         $project = Project::find($id);
+        $data = new ProjectResource($project);
 
         if(is_null($project)){
             return response()->json('id not found', 404);
         }
 
-        return response()->json($project,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -105,6 +107,7 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $project = Project::find($id);
+        $data = new ProjectResource($project);
 
         if(is_null($project)){
             return response()->json('id not found!!!!', 404);
@@ -112,7 +115,7 @@ class ProjectController extends Controller
 
         $project->update($request->all());
 
-        return response()->json($project,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -124,12 +127,14 @@ class ProjectController extends Controller
     public function destroy(Request $request, $id)
     {
         $project = Project::find($id);
+        $data = new ProjectResource($project);
+
 
         if(is_null($project)){
             return response()->json('id not found!!!!', 404);
         }
 
-        $project->delete($request->all());
+        $data->delete($request->all());
 
         return response()->json('recourd delete',200);
     }

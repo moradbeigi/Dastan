@@ -23,7 +23,7 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(),$Roules);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()],401);
+            return response()->json(['error' => $validator->errors()],422);
         }
 
         if(request()->has('photo_name')){
@@ -33,7 +33,7 @@ class RegisterController extends Controller
             $photouload->move($photopath,$photoname);
         }
 
-        $input = $request->all();
+        $input = $validator->validated();
         $input['password'] = bcrypt($input['password']);
         $input['photo_name'] = '/images/' . $photoname;
         $user = User::create($input); 

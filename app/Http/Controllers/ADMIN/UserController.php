@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ADMIN;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\User;
 use Validator;
 use Illuminate\Http\Request;
@@ -17,8 +18,16 @@ class UserController extends Controller
      */
     public function index()
     {
-        $getUser = User::get();
+        if(auth()->user()->isAdmin == 1){
+            $getUser = User::get();
         return response()->json($getUser);
+        }
+        else {
+            $getUser = \Auth::user();
+            $data = new UserResource($getUser);
+            return response()->json($data);
+        }
+
     }
 
     /**
@@ -42,18 +51,31 @@ class UserController extends Controller
         $roule = [
             'name'     => 'required',
             'email'    => 'required', 
-            
+            'photo_name' => ['sometimes','image', 'mimes:jpg,jpeg, png', 'max:5000'],
+            'password' => 'required'
         ];
 
         $validator = Validator::make($request->all(),$roule);
 
         if ($validator->fails()){
-            return response()->json($validator->error(),400);
+            return response()->json($validator->error(),422);
         }
+
+        if(request()->has('photo_name')){
+            $photouload = request()->file('photo_name');
+            $photoname = time() . '.' . $photouload->getClientOriginalExtension();
+            $photopath = public_path('/images/NormalUser');
+            $photouload->move($photopath,$photoname);
+        }
+
+        $input = $validator->validated();
+
+        $input['password'] = bcrypt($input['password']);
+        $input['photo_name'] = '/images/NormalUser/' . $photoname;
         
-        $user = User::create($request->all());
+        $user = User::create($input);
         return response()->json($user,200);
-    }
+        }
 
     /**
      * Display the specified resource.
@@ -64,10 +86,12 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::find($id);
+        $data = new UserResource($user);
+
         if (is_null($user)) {
            return response()->json('id not found',404);
         }
-           return response()->json($user);
+           return response()->json($data);
     }
 
     /**
@@ -91,13 +115,15 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::find($id);
+        $data = new UserResource($user);
+
         if (is_null($user)) {
            return response()->json('id not found',404);
         }
 
         $user->update($request->all());
 
-        return response()->json($user,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -109,11 +135,12 @@ class UserController extends Controller
     public function destroy(Request $request,$id)
     {
         $user = User::find($id);
+        $data = new UserResource($user);
         if (is_null($user)) {
            return response()->json('id not found',404);
         }
 
-        $user->delete($request->all());
+        $data->delete($request->all());
 
         return response()->json(null,200);
     }
