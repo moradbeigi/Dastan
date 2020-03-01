@@ -7,7 +7,7 @@ use App\Http\Resources\UserResource;
 use App\User;
 use Validator;
 use Illuminate\Http\Request;
-use Laminas\Diactoros\Response;
+use Laminas\Diactoros\Response; 
 
 class UserController extends Controller
 {

@@ -31,6 +31,7 @@ Route::post('login', 'ADMIN\RegisterController@login');
 
 Route::middleware('auth:api')->group(function () {
     Route::resource('normaluser', 'ADMIN\UserController');
+    Route::resource('comments', 'CommentController');
 });
 
 Route::middleware('auth:api','admin')->group(function () {
@@ -45,3 +46,5 @@ Route::get('galleryimages', 'ImageGalleryController@index');
 Route::get('ourproject', 'ProjectController@index');
 
 Route::get('posts', 'PostController@index');
+
+Route::get('comments', 'CommentController@index');
