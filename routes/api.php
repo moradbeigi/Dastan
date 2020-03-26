@@ -22,18 +22,25 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
+// Route::get('email/verify/{id}', 'VerificationApiController@verify')->name('verificationapi.verify');
+// Route::get('email/resend', 'VerificationApiController@resend')->name('verificationapi.resend');
 
 Route::post('register', 'ADMIN\RegisterController@register');
 Route::post('login', 'ADMIN\RegisterController@login');
 
-// Route::resource('comments','CommentController');
+Route::get('email/verify/{id}', 'VerificationApiController@verify')->name('verificationapi.verify');
+Route::get('email/resend', 'VerificationApiController@resend')->name('verificationapi.resend');
 
-Route::middleware('auth:api')->group(function () {
+
+//comment route
+Route::middleware('auth:api', 'verified')->group(function () {
+    Route::post('details', 'ADMIN\RegisterController@details');
+
     Route::resource('normaluser', 'ADMIN\UserController');
     Route::resource('comments', 'CommentController');
 });
 
+//admin route
 Route::middleware('auth:api','admin')->group(function () {
     Route::resource('useradmin','ADMIN\UserController');
     Route::resource('galleryimageadmin','ImageGalleryController');
@@ -41,6 +48,7 @@ Route::middleware('auth:api','admin')->group(function () {
     Route::resource('postsadmin', 'PostController');
 });
 
+//site route
 Route::get('galleryimages', 'ImageGalleryController@index');
 
 Route::get('ourproject', 'ProjectController@index');
