@@ -46,4 +46,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
     $this->notify(new VerifyApiEmail); // my notification
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

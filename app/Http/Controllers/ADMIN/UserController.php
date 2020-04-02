@@ -27,7 +27,7 @@ class UserController extends Controller
             $data = new UserResource($getUser);
             return response()->json($data);
         }
-
+            
     }
 
     /**

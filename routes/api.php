@@ -35,7 +35,6 @@ Route::get('email/resend', 'VerificationApiController@resend')->name('verificati
 //comment route
 Route::middleware('auth:api', 'verified')->group(function () {
     Route::post('details', 'ADMIN\RegisterController@details');
-
     Route::resource('normaluser', 'ADMIN\UserController');
     Route::resource('comments', 'CommentController');
 });

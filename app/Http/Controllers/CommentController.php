@@ -17,9 +17,15 @@ class CommentController extends Controller
      */
     public function index()
     {
-        $comment = Comment::orderby('id','DESC')->get();
-        $data = CommentResource::collection($comment);
-        return response()->json($data);
+        $comment = Comment::orderBy('id','DESC')->get();
+        
+        // $data = CommentResource::collection($comment);
+        // $data = User::find(4)->comments;
+        // return response()->json($data);
+
+        //relation(hasMeny)
+        $comment = User::find(3)->comments;
+            return response()->json($comment);
     }
 
     /**
@@ -80,7 +86,7 @@ class CommentController extends Controller
         return response()->json($data);
     }
     else {
-        return response()->json('you atrnt admin');
+        return response()->json('you are not admin');
     }
     }
 
